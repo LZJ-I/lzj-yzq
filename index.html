@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LZJ❤YZQ 计时器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        love: {
+                            light: '#FFB6C1',
+                            DEFAULT: '#FF69B4',
+                            dark: '#C71585'
+                        }
+                    },
+                    fontFamily: {
+                        romantic: ['Dancing Script', 'cursive', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            .heart-beat {
+                animation: heartbeat 1.5s ease-in-out infinite;
+            }
+            .float {
+                animation: float 3s ease-in-out infinite;
+            }
+        }
+        
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.1); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.1); }
+            70% { transform: scale(1); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+    
+    <!-- 引入Google字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-pink-50 to-purple-100 min-h-screen flex flex-col items-center justify-center p-4">
+    
+    <!-- 装饰性元素 -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-10 left-10 w-16 h-16 text-love/20 heart-beat"><i class="fa fa-heart text-4xl"></i></div>
+        <div class="absolute top-20 right-20 w-12 h-12 text-love/20 heart-beat" style="animation-delay: 0.3s"><i class="fa fa-heart text-3xl"></i></div>
+        <div class="absolute bottom-40 left-20 w-10 h-10 text-love/20 heart-beat" style="animation-delay: 0.6s"><i class="fa fa-heart text-2xl"></i></div>
+        <div class="absolute bottom-20 right-40 w-14 h-14 text-love/20 heart-beat" style="animation-delay: 0.9s"><i class="fa fa-heart text-3xl"></i></div>
+    </div>
+    
+    <div class="relative z-10 text-center max-w-3xl w-full">
+        <!-- 标题 -->
+        <h1 class="text-[clamp(2.5rem,8vw,5rem)] font-romantic font-bold text-love-dark mb-8 text-shadow float">
+            LZJ<span class="text-love heart-beat">❤</span>YZQ
+        </h1>
+        
+        <!-- 计时器容器 -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 md:p-10 border border-love/20">
+            <p class="text-gray-700 text-lg md:text-xl mb-6">我们已经在一起</p>
+            
+            <!-- 时间显示 -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
+                <!-- 年 -->
+                <div class="bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-4 transform transition-all hover:scale-105 hover:shadow-lg">
+                    <div id="years" class="text-3xl md:text-5xl font-bold text-love-dark">0</div>
+                    <div class="text-gray-600 text-sm md:text-base mt-1">年</div>
+                </div>
+                
+                <!-- 天 -->
+                <div class="bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-4 transform transition-all hover:scale-105 hover:shadow-lg">
+                    <div id="days" class="text-3xl md:text-5xl font-bold text-love-dark">0</div>
+                    <div class="text-gray-600 text-sm md:text-base mt-1">天</div>
+                </div>
+                
+                <!-- 小时 -->
+                <div class="bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-4 transform transition-all hover:scale-105 hover:shadow-lg">
+                    <div id="hours" class="text-3xl md:text-5xl font-bold text-love-dark">0</div>
+                    <div class="text-gray-600 text-sm md:text-base mt-1">时</div>
+                </div>
+                
+                <!-- 分钟 -->
+                <div class="bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-4 transform transition-all hover:scale-105 hover:shadow-lg">
+                    <div id="minutes" class="text-3xl md:text-5xl font-bold text-love-dark">0</div>
+                    <div class="text-gray-600 text-sm md:text-base mt-1">分</div>
+                </div>
+                
+                <!-- 秒 -->
+                <div class="bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-4 transform transition-all hover:scale-105 hover:shadow-lg">
+                    <div id="seconds" class="text-3xl md:text-5xl font-bold text-love-dark">0</div>
+                    <div class="text-gray-600 text-sm md:text-base mt-1">秒</div>
+                </div>
+            </div>
+            
+            <!-- 提示信息 -->
+            <div class="mt-8 text-gray-500 text-sm italic">
+                <p>要修改起始日期，请编辑代码中的 <code class="bg-gray-100 px-1 rounded">startDate</code> 变量</p>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer class="mt-10 text-gray-500 text-sm">
+            <p>用 ❤ 制作</p>
+        </footer>
+    </div>
+
+    <script>
+        // 在这里修改起始日期（年, 月, 日, 时, 分, 秒）
+        // 月份是从0开始的（0=1月，11=12月）
+        const startDate = new Date(2023, 0, 1, 0, 0, 0); // 默认：2023年1月1日 00:00:00
+        
+        // 更新计时器的函数
+        function updateTimer() {
+            const now = new Date();
+            const diff = now - startDate;
+            
+            // 计算各种时间单位
+            const totalSeconds = Math.floor(diff / 1000);
+            const seconds = totalSeconds % 60;
+            
+            const totalMinutes = Math.floor(totalSeconds / 60);
+            const minutes = totalMinutes % 60;
+            
+            const totalHours = Math.floor(totalMinutes / 60);
+            const hours = totalHours % 24;
+            
+            const totalDays = Math.floor(totalHours / 24);
+            
+            // 计算年数（简化计算，按365天一年计算）
+            const years = Math.floor(totalDays / 365);
+            const days = totalDays % 365;
+            
+            // 更新DOM
+            document.getElementById('years').textContent = years;
+            document.getElementById('days').textContent = days;
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        }
+        
+        // 立即更新一次，然后每秒更新一次
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    </script>
+</body>
+</html>
