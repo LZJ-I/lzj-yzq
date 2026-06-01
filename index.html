@@ -173,13 +173,19 @@
         
         <!-- 页脚 -->
         <footer class="mt-6 text-gray-600 text-xs md:text-base italic font-romantic">
-            <p>落日沉溺于橘色的海   晚风沦陷于赤诚的爱。</p>
+            <p id="motto">落日沉溺于橘色的海   晚风沦陷于赤诚的爱。</p>
         </footer>
     </div>
 
     <script src="./assets/luxon.min.js"></script>
+    <script src="./config.js"></script>
     <script>
-        const startDate = new Date(2023, 1, 14, 19, 22, 0);
+        const startDate = luxon.DateTime.fromISO(COUPLE_CONFIG.startDate).toJSDate();
+
+        document.title = `${COUPLE_CONFIG.name1}与${COUPLE_CONFIG.name2}的恋爱计时器`;
+        document.getElementById('title').innerHTML =
+            `${COUPLE_CONFIG.name1}<span class="text-love heart-beat">❤</span>${COUPLE_CONFIG.name2}`;
+        document.getElementById('motto').textContent = COUPLE_CONFIG.motto;
         
         // 计时模式：0-年月日时分秒，1-月天时分秒，2-周天时分秒，3-天时分秒(默认)，4-时分秒，5-分秒，6-秒
         let timerMode = 3;  // 设置默认模式为天时分秒
