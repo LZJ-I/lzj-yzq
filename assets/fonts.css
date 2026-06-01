@@ -1,0 +1,36 @@
+@font-face {
+    font-family: "Dancing Script";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("./fonts/dancing-script-400.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Dancing Script";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("./fonts/dancing-script-700.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "FontAwesome";
+    font-style: normal;
+    font-weight: normal;
+    font-display: block;
+    src: url("./fonts/fontawesome-webfont.woff2") format("woff2");
+}
+
+.fa {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.fa-heart::before {
+    content: "\f004";
+}
