@@ -177,8 +177,8 @@
         </footer>
     </div>
 
+    <script src="./assets/luxon.min.js"></script>
     <script>
-        // 起始日期：2023年2月14日晚上7点22分
         const startDate = new Date(2023, 1, 14, 19, 22, 0);
         
         // 计时模式：0-年月日时分秒，1-月天时分秒，2-周天时分秒，3-天时分秒(默认)，4-时分秒，5-分秒，6-秒
@@ -224,122 +224,38 @@
             setTimeout(createMeteor, i * 500);
         }
         
-        // 获取某月的天数
-        function getDaysInMonth(year, month) {
-            return new Date(year, month + 1, 0).getDate();
-        }
-        
-        // 精确计算两个日期之间的差值
+        // 精确计算两个日期之间的差值（基于 Luxon，日历感知）
         function calculateDateDifference(start, end) {
-            // 如果开始日期在结束日期之后，返回0
-            if (start > end) {
-                return { 
-                    years: 0, months: 0, weeks: 0, days: 0, 
+            const startDT = luxon.DateTime.fromJSDate(start);
+            const endDT = luxon.DateTime.fromJSDate(end);
+
+            if (startDT >= endDT) {
+                return {
+                    years: 0, months: 0, weeks: 0, days: 0,
                     hours: 0, minutes: 0, seconds: 0,
                     totalDays: 0, totalSeconds: 0,
                     daysRemaining: 0
                 };
             }
-            
-            // 计算总毫秒数差值
-            const totalMs = end - start;
-            const totalSeconds = Math.floor(totalMs / 1000);
-            const totalDays = Math.floor(totalSeconds / (60 * 60 * 24));
-            const weeks = Math.floor(totalDays / 7);
-            const daysRemaining = totalDays % 7;
-            
-            // 计算年月日
-            let years = 0;
-            let months = 0;
-            let days = 0;
-            
-            let currentYear = start.getFullYear();
-            let currentMonth = start.getMonth();
-            
-            // 计算年
-            while (currentYear < end.getFullYear()) {
-                const nextYear = currentYear + 1;
-                const endOfYear = new Date(nextYear, 0, 1);
-                
-                if (endOfYear <= end) {
-                    years++;
-                    currentYear = nextYear;
-                } else {
-                    break;
-                }
-            }
-            
-            // 计算月
-            while (currentMonth < end.getMonth() || currentYear < end.getFullYear()) {
-                const nextMonth = currentMonth + 1;
-                const endOfMonth = new Date(currentYear, nextMonth, 1);
-                
-                if (endOfMonth <= end) {
-                    months++;
-                    currentMonth = nextMonth;
-                    if (currentMonth > 11) {
-                        currentMonth = 0;
-                        currentYear++;
-                    }
-                } else {
-                    break;
-                }
-            }
-            
-            // 计算日
-            days = end.getDate() - start.getDate();
-            if (days < 0) {
-                // 如果日期为负，需要从上个月借位
-                const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-                const prevMonthDays = getDaysInMonth(currentYear, prevMonth);
-                days += prevMonthDays;
-                months--;
-                if (months < 0) {
-                    months = 11;
-                    years--;
-                }
-            }
-            
-            // 计算时分秒，处理负数情况
-            let hours = end.getHours() - start.getHours();
-            let minutes = end.getMinutes() - start.getMinutes();
-            let seconds = end.getSeconds() - start.getSeconds();
-            
-            // 处理秒数为负的情况
-            if (seconds < 0) {
-                seconds += 60;
-                minutes--;
-            }
-            
-            // 处理分钟为负的情况
-            if (minutes < 0) {
-                minutes += 60;
-                hours--;
-            }
-            
-            // 处理小时为负的情况
-            if (hours < 0) {
-                hours += 24;
-                days--;
-                
-                // 如果天数变为负数，需要调整月份
-                if (days < 0) {
-                    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-                    const prevMonthDays = getDaysInMonth(currentYear, prevMonth);
-                    days += prevMonthDays;
-                    months--;
-                    if (months < 0) {
-                        months = 11;
-                        years--;
-                    }
-                }
-            }
-            
-            return { 
-                years, months, weeks, days, 
-                hours, minutes, seconds,
-                totalDays, totalSeconds,
-                daysRemaining
+
+            // 日历分解：年/月/日/时/分/秒（用于年月日相关模式）
+            const cal = endDT.diff(startDT, ["years", "months", "days", "hours", "minutes", "seconds"]).toObject();
+
+            // 绝对总量：用于天/周/时分秒等模式
+            const totalSeconds = Math.floor(endDT.diff(startDT, "seconds").seconds);
+            const totalDays = Math.floor(endDT.diff(startDT, "days").days);
+
+            return {
+                years: cal.years,
+                months: cal.months,
+                days: cal.days,
+                hours: cal.hours,
+                minutes: cal.minutes,
+                seconds: Math.floor(cal.seconds),
+                weeks: Math.floor(totalDays / 7),
+                daysRemaining: totalDays % 7,
+                totalDays,
+                totalSeconds
             };
         }
         
