@@ -29,7 +29,7 @@
         
         <!-- 模式提示 -->
         <div class="mb-4 text-love-dark/80 text-sm md:text-base">
-            <span class="mode-indicator">点击标题切换显示模式 (当前模式: <span id="currentModeText">天时分秒</span>)</span>
+            <span class="mode-indicator">点击标题切换显示模式 (当前模式: <span id="currentModeText">年月日时分秒</span>)</span>
         </div>
         
         <!-- 计时器容器 -->
@@ -38,8 +38,8 @@
             
             <!-- 所有时间显示模式的容器 -->
             <div class="w-full">
-                <!-- 模式0: 年月日时分秒 - 大屏幕一行，小屏幕自动换行 -->
-                <div id="mode0" class="hidden flex flex-wrap justify-center gap-2 md:gap-3 overflow-hidden">
+                <!-- 模式0: 年月日时分秒 (默认显示) - 大屏幕一行，小屏幕自动换行 -->
+                <div id="mode0" class="flex flex-wrap justify-center gap-2 md:gap-3 overflow-hidden">
                     <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
                         <div id="years" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">年</div>
@@ -114,8 +114,8 @@
                     </div>
                 </div>
                 
-                <!-- 模式3: 天时分秒 (默认显示) -->
-                <div id="mode3" class="flex flex-wrap justify-center gap-2 md:gap-3 overflow-hidden">
+                <!-- 模式3: 天时分秒 -->
+                <div id="mode3" class="hidden flex flex-wrap justify-center gap-2 md:gap-3 overflow-hidden">
                     <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
                         <div id="m3-days" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">天</div>
@@ -188,8 +188,8 @@
             `${COUPLE_CONFIG.name1}<span class="text-love heart-beat">❤</span>${COUPLE_CONFIG.name2}`;
         document.getElementById('motto').textContent = COUPLE_CONFIG.motto;
         
-        // 计时模式：0-年月日时分秒，1-月天时分秒，2-周天时分秒，3-天时分秒(默认)，4-时分秒，5-分秒，6-秒
-        let timerMode = 3;  // 设置默认模式为天时分秒
+        // 计时模式：0-年月日时分秒(默认)，1-月天时分秒，2-周天时分秒，3-天时分秒，4-时分秒，5-分秒，6-秒
+        let timerMode = 0;  // 设置默认模式为年月日时分秒
         const totalModes = 7;
         const modeNames = [
             "年月日时分秒",
