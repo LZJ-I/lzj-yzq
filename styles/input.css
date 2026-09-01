@@ -27,7 +27,31 @@
     .time-unit {
         white-space: nowrap;
         flex: none;
+        box-sizing: border-box;
+        overflow: hidden;
+        min-width: 4.5rem;
     }
+    .time-unit > div:first-child {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum";
+        min-width: 2ch;
+        min-height: 1.15em;
+    }
+    .digit-tick {
+        animation: digit-tick 0.32s ease;
+    }
+}
+
+html.is-ready .page-bg {
+    animation: fade-in 0.65s ease both;
+}
+
+html.is-ready .page-main {
+    animation: page-enter 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.timer-mode:not(.hidden) {
+    animation: mode-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes heartbeat {
@@ -66,4 +90,62 @@
     0% { opacity: 0.6; }
     50% { opacity: 1; }
     100% { opacity: 0.6; }
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes page-enter {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes mode-in {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes digit-tick {
+    0%, 100% { opacity: 1; }
+    40% { opacity: 0.72; }
+}
+
+@media (min-width: 768px) {
+    .time-unit {
+        min-width: 5.75rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .time-unit {
+        min-width: 6.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.is-ready .page-bg,
+    html.is-ready .page-main,
+    .timer-mode:not(.hidden),
+    .digit-tick,
+    .heart-beat,
+    .float,
+    .meteor,
+    .mode-indicator,
+    .loader-heart {
+        animation: none !important;
+    }
 }

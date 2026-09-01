@@ -1,16 +1,64 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="is-loading" aria-busy="true">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LZJ与YZQ的恋爱计时器</title>
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
-    <link href="./assets/styles.css?v=3" rel="stylesheet">
+    <link rel="preload" href="./assets/fonts/dancing-script-700.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="./assets/fonts/dancing-script-400.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="./assets/luxon.min.js" as="script">
+    <style>
+        html { background-color: #f7eef5; }
+        html.is-loading body > :not(#page-loader) { opacity: 0; }
+        .page-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f7eef5 linear-gradient(to bottom right, rgba(88, 28, 135, 0.3), rgba(157, 23, 77, 0.3), rgba(126, 34, 206, 0.3));
+            transition: opacity 0.45s ease, visibility 0.45s ease;
+        }
+        html.is-ready .page-loader {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loader-heart {
+            font-size: 2.75rem;
+            line-height: 1;
+            color: #C71585;
+            filter: drop-shadow(0 0 14px rgba(255, 105, 180, 0.55));
+            animation: loader-beat 1.15s ease-in-out infinite;
+        }
+        @keyframes loader-beat {
+            0%, 100% { transform: scale(1); }
+            14% { transform: scale(1.14); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.14); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .loader-heart { animation: none; }
+            .page-loader { transition: none; }
+        }
+    </style>
+    <link href="./assets/styles.css?v=5" rel="stylesheet">
+    <noscript>
+        <style>
+            html.is-loading body > :not(#page-loader) { opacity: 1 !important; }
+            #page-loader { display: none !important; }
+        </style>
+    </noscript>
 </head>
 <body class="bg-gradient-to-br from-purple-900/30 via-pink-800/30 to-purple-700/30 min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
-    
+    <div id="page-loader" class="page-loader" aria-hidden="true">
+        <span class="loader-heart">❤</span>
+    </div>
+
     <!-- 装饰性元素 - 爱心和流星 -->
-    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+    <div class="page-bg fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <!-- 爱心元素 -->
         <div class="absolute top-10 left-10 w-16 h-16 text-love/20 heart-beat"><i class="fa fa-heart text-4xl"></i></div>
         <div class="absolute top-20 right-20 w-12 h-12 text-love/20 heart-beat" style="animation-delay: 0.3s"><i class="fa fa-heart text-3xl"></i></div>
@@ -21,11 +69,13 @@
         <div id="meteor-container" class="absolute inset-0 w-full h-full pointer-events-none"></div>
     </div>
     
-    <div class="relative z-10 text-center w-full max-w-6xl">
+    <div class="page-main relative z-10 text-center w-full max-w-6xl">
         <!-- 标题 - 可点击切换显示模式 -->
-        <h1 id="title" class="text-[clamp(2rem,8vw,5rem)] font-romantic font-bold text-love-dark mb-4 text-shadow float cursor-pointer transition-transform hover:scale-105">
-            LZJ<span class="text-love heart-beat">❤</span>YZQ
-        </h1>
+        <div class="float mb-4">
+            <h1 id="title" class="text-[clamp(2rem,8vw,5rem)] font-romantic font-bold text-love-dark text-shadow cursor-pointer transition-transform hover:scale-105">
+                LZJ<span class="text-love heart-beat">❤</span>YZQ
+            </h1>
+        </div>
         
         <!-- 模式提示 -->
         <div class="mb-4 text-love-dark/80 text-sm md:text-base">
@@ -39,133 +89,133 @@
             <!-- 所有时间显示模式的容器 -->
             <div class="w-full">
                 <!-- 模式0: 年月日时分秒 (默认显示) - 大屏幕一行，小屏幕自动换行 -->
-                <div id="mode0" class="flex flex-wrap justify-center gap-2 md:gap-3 overflow-hidden">
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="years" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                <div id="mode0" class="timer-mode flex flex-wrap justify-center gap-2 md:gap-3">
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="years" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">年</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="months" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="months" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">月</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="days" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="days" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">天</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="hours" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="hours" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">时</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">分</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">秒</div>
                     </div>
                 </div>
                 
                 <!-- 模式1: 月天时分秒 -->
-                <div id="mode1" class="hidden flex flex-wrap justify-center gap-2 md:gap-3 overflow-hidden">
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m1-months" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                <div id="mode1" class="timer-mode hidden flex flex-wrap justify-center gap-2 md:gap-3">
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m1-months" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">月</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m1-days" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m1-days" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">天</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m1-hours" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m1-hours" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">时</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m1-minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m1-minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">分</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m1-seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m1-seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">秒</div>
                     </div>
                 </div>
                 
                 <!-- 模式2: 周天时分秒 -->
-                <div id="mode2" class="hidden flex flex-wrap justify-center gap-2 md:gap-3 overflow-hidden">
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="weeks" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                <div id="mode2" class="timer-mode hidden flex flex-wrap justify-center gap-2 md:gap-3">
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="weeks" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">周</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m2-days" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m2-days" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">天</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m2-hours" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m2-hours" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">时</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m2-minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m2-minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">分</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m2-seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m2-seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">秒</div>
                     </div>
                 </div>
                 
                 <!-- 模式3: 天时分秒 -->
-                <div id="mode3" class="hidden flex flex-wrap justify-center gap-2 md:gap-3 overflow-hidden">
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m3-days" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                <div id="mode3" class="timer-mode hidden flex flex-wrap justify-center gap-2 md:gap-3">
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m3-days" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">天</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m3-hours" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m3-hours" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">时</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m3-minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m3-minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">分</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m3-seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m3-seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">秒</div>
                     </div>
                 </div>
                 
                 <!-- 模式4: 时分秒 -->
-                <div id="mode4" class="hidden flex flex-wrap justify-center gap-2 md:gap-3 overflow-hidden">
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m4-hours" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                <div id="mode4" class="timer-mode hidden flex flex-wrap justify-center gap-2 md:gap-3">
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m4-hours" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">时</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m4-minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m4-minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">分</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m4-seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m4-seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">秒</div>
                     </div>
                 </div>
                 
                 <!-- 模式5: 分秒 -->
-                <div id="mode5" class="hidden flex flex-wrap justify-center gap-2 md:gap-3 overflow-hidden">
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m5-minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                <div id="mode5" class="timer-mode hidden flex flex-wrap justify-center gap-2 md:gap-3">
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m5-minutes" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">分</div>
                     </div>
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="m5-seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="m5-seconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">秒</div>
                     </div>
                 </div>
                 
                 <!-- 模式6: 秒 -->
-                <div id="mode6" class="hidden flex justify-center p-3">
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-all hover:scale-105 hover:shadow-lg text-center">
-                        <div id="totalSeconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark">0</div>
+                <div id="mode6" class="timer-mode hidden flex justify-center p-3">
+                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="totalSeconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">秒</div>
                     </div>
                 </div>
@@ -182,14 +232,16 @@
     <script src="./config.js"></script>
     <script>
         const startDate = luxon.DateTime.fromISO(COUPLE_CONFIG.startDate).toJSDate();
+        const titleElement = document.getElementById('title');
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         document.title = `${COUPLE_CONFIG.name1}与${COUPLE_CONFIG.name2}的恋爱计时器`;
-        document.getElementById('title').innerHTML =
+        titleElement.innerHTML =
             `${COUPLE_CONFIG.name1}<span class="text-love heart-beat">❤</span>${COUPLE_CONFIG.name2}`;
         document.getElementById('motto').textContent = COUPLE_CONFIG.motto;
-        
+
         // 计时模式：0-年月日时分秒(默认)，1-月天时分秒，2-周天时分秒，3-天时分秒，4-时分秒，5-分秒，6-秒
-        let timerMode = 0;  // 设置默认模式为年月日时分秒
+        let timerMode = 0;
         const totalModes = 7;
         const modeNames = [
             "年月日时分秒",
@@ -200,38 +252,43 @@
             "分秒",
             "秒"
         ];
-        
-        // 创建流星效果
+
+        function setText(id, value, tick) {
+            const el = document.getElementById(id);
+            const next = String(value);
+            if (el.textContent === next) return;
+            el.textContent = next;
+            if (!tick || reduceMotion) return;
+            el.classList.remove('digit-tick');
+            void el.offsetWidth;
+            el.classList.add('digit-tick');
+        }
+
         function createMeteor() {
             const container = document.getElementById('meteor-container');
             const meteor = document.createElement('div');
             meteor.classList.add('meteor');
-            
-            // 随机位置和动画时间
+
             const startX = Math.random() * window.innerWidth;
             const startY = Math.random() * window.innerHeight / 2;
             const duration = 2 + Math.random() * 3;
-            
+
             meteor.style.top = `${startY}px`;
             meteor.style.left = `${startX}px`;
             meteor.style.animationDuration = `${duration}s`;
-            
+
             container.appendChild(meteor);
-            
-            // 动画结束后移除流星元素
-            setTimeout(() => {
-                meteor.remove();
-            }, duration * 1000);
+            setTimeout(() => meteor.remove(), duration * 1000);
         }
-        
-        // 定期创建流星
-        setInterval(createMeteor, 1500);
-        // 初始创建一些流星
-        for (let i = 0; i < 3; i++) {
-            setTimeout(createMeteor, i * 500);
+
+        function startAtmosphere() {
+            if (reduceMotion) return;
+            setInterval(createMeteor, 1500);
+            for (let i = 0; i < 3; i++) {
+                setTimeout(createMeteor, i * 500);
+            }
         }
-        
-        // 精确计算两个日期之间的差值（基于 Luxon，日历感知）
+
         function calculateDateDifference(start, end) {
             const startDT = luxon.DateTime.fromJSDate(start);
             const endDT = luxon.DateTime.fromJSDate(end);
@@ -245,10 +302,7 @@
                 };
             }
 
-            // 日历分解：年/月/日/时/分/秒（用于年月日相关模式）
             const cal = endDT.diff(startDT, ["years", "months", "days", "hours", "minutes", "seconds"]).toObject();
-
-            // 绝对总量：用于天/周/时分秒等模式
             const totalSeconds = Math.floor(endDT.diff(startDT, "seconds").seconds);
             const totalDays = Math.floor(endDT.diff(startDT, "days").days);
 
@@ -265,89 +319,111 @@
                 totalSeconds
             };
         }
-        
-        // 更新计时器的函数
+
+        function applyMode(mode) {
+            timerMode = mode;
+            document.getElementById('currentModeText').textContent = modeNames[timerMode];
+            for (let i = 0; i < totalModes; i++) {
+                document.getElementById(`mode${i}`).classList.toggle('hidden', i !== timerMode);
+            }
+        }
+
         function updateTimer() {
             const now = new Date();
             const diff = calculateDateDifference(startDate, now);
-            
-            // 更新所有可能用到的数据
-            document.getElementById('years').textContent = diff.years;
-            document.getElementById('months').textContent = diff.months;
-            document.getElementById('days').textContent = diff.days;
-            document.getElementById('hours').textContent = String(diff.hours).padStart(2, '0');
-            document.getElementById('minutes').textContent = String(diff.minutes).padStart(2, '0');
-            document.getElementById('seconds').textContent = String(diff.seconds).padStart(2, '0');
-            document.getElementById('weeks').textContent = diff.weeks;
-            document.getElementById('totalSeconds').textContent = diff.totalSeconds;
-            
-            // 模式1: 月天时分秒
-            document.getElementById('m1-months').textContent = diff.months + diff.years * 12;
-            document.getElementById('m1-days').textContent = diff.days;
-            document.getElementById('m1-hours').textContent = String(diff.hours).padStart(2, '0');
-            document.getElementById('m1-minutes').textContent = String(diff.minutes).padStart(2, '0');
-            document.getElementById('m1-seconds').textContent = String(diff.seconds).padStart(2, '0');
-            
-            // 模式2: 周天时分秒
-            document.getElementById('m2-days').textContent = diff.daysRemaining;
-            document.getElementById('m2-hours').textContent = String(diff.hours).padStart(2, '0');
-            document.getElementById('m2-minutes').textContent = String(diff.minutes).padStart(2, '0');
-            document.getElementById('m2-seconds').textContent = String(diff.seconds).padStart(2, '0');
-            
-            // 模式3: 天时分秒
-            document.getElementById('m3-days').textContent = diff.totalDays;
-            document.getElementById('m3-hours').textContent = String(diff.hours).padStart(2, '0');
-            document.getElementById('m3-minutes').textContent = String(diff.minutes).padStart(2, '0');
-            document.getElementById('m3-seconds').textContent = String(diff.seconds).padStart(2, '0');
-            
-            // 模式4: 时分秒
+            const hours = String(diff.hours).padStart(2, '0');
+            const minutes = String(diff.minutes).padStart(2, '0');
+            const seconds = String(diff.seconds).padStart(2, '0');
+
+            setText('years', diff.years);
+            setText('months', diff.months);
+            setText('days', diff.days);
+            setText('hours', hours);
+            setText('minutes', minutes);
+            setText('seconds', seconds, timerMode === 0);
+
+            setText('m1-months', diff.months + diff.years * 12);
+            setText('m1-days', diff.days);
+            setText('m1-hours', hours);
+            setText('m1-minutes', minutes);
+            setText('m1-seconds', seconds, timerMode === 1);
+
+            setText('weeks', diff.weeks);
+            setText('m2-days', diff.daysRemaining);
+            setText('m2-hours', hours);
+            setText('m2-minutes', minutes);
+            setText('m2-seconds', seconds, timerMode === 2);
+
+            setText('m3-days', diff.totalDays);
+            setText('m3-hours', hours);
+            setText('m3-minutes', minutes);
+            setText('m3-seconds', seconds, timerMode === 3);
+
             const totalHours = diff.totalDays * 24 + diff.hours;
-            document.getElementById('m4-hours').textContent = totalHours;
-            document.getElementById('m4-minutes').textContent = String(diff.minutes).padStart(2, '0');
-            document.getElementById('m4-seconds').textContent = String(diff.seconds).padStart(2, '0');
-            
-            // 模式5: 分秒
+            setText('m4-hours', totalHours);
+            setText('m4-minutes', minutes);
+            setText('m4-seconds', seconds, timerMode === 4);
+
             const totalMinutes = totalHours * 60 + diff.minutes;
-            document.getElementById('m5-minutes').textContent = totalMinutes;
-            document.getElementById('m5-seconds').textContent = String(diff.seconds).padStart(2, '0');
-            
-            // 更新当前模式文本显示
-            document.getElementById('currentModeText').textContent = modeNames[timerMode];
-            
-            // 根据当前模式显示对应的计时器
-            for (let i = 0; i < totalModes; i++) {
-                document.getElementById(`mode${i}`).classList.add('hidden');
-            }
-            document.getElementById(`mode${timerMode}`).classList.remove('hidden');
+            setText('m5-minutes', totalMinutes);
+            setText('m5-seconds', seconds, timerMode === 5);
+
+            setText('totalSeconds', diff.totalSeconds, timerMode === 6);
         }
-        
-        // 确保DOM加载完成后再绑定事件
-        document.addEventListener('DOMContentLoaded', function() {
-            // 获取标题元素
-            const titleElement = document.getElementById('title');
-            
-            // 绑定点击事件
-            if (titleElement) {
-                titleElement.addEventListener('click', () => {
-                    // 切换到下一个模式
-                    timerMode = (timerMode + 1) % totalModes;
-                    updateTimer();
-                    
-                    // 添加点击反馈动画
-                    titleElement.classList.add('scale-90');
-                    setTimeout(() => {
-                        titleElement.classList.remove('scale-90');
-                    }, 150);
-                });
-                
-                // 初始更新一次
-                updateTimer();
+
+        function revealPage() {
+            const root = document.documentElement;
+            if (root.classList.contains('is-ready')) return;
+            root.classList.remove('is-loading');
+            root.classList.add('is-ready');
+            root.removeAttribute('aria-busy');
+
+            const loader = document.getElementById('page-loader');
+            if (loader) {
+                if (reduceMotion) {
+                    loader.remove();
+                } else {
+                    const removeLoader = () => loader.remove();
+                    loader.addEventListener('transitionend', removeLoader, { once: true });
+                    setTimeout(removeLoader, 600);
+                }
             }
+            startAtmosphere();
+        }
+
+        async function waitForReady() {
+            updateTimer();
+            applyMode(timerMode);
+
+            const fontReady = document.fonts
+                ? Promise.all([
+                    document.fonts.load('700 4rem "Dancing Script"'),
+                    document.fonts.load('400 1.25rem "Dancing Script"')
+                ]).catch(() => {})
+                : Promise.resolve();
+
+            await Promise.race([
+                fontReady,
+                new Promise((resolve) => setTimeout(resolve, 1000))
+            ]);
+
+            if (reduceMotion) {
+                revealPage();
+                return;
+            }
+            requestAnimationFrame(() => requestAnimationFrame(revealPage));
+        }
+
+        titleElement.addEventListener('click', () => {
+            applyMode((timerMode + 1) % totalModes);
+            updateTimer();
+            titleElement.classList.add('scale-90');
+            setTimeout(() => titleElement.classList.remove('scale-90'), 150);
         });
-        
-        // 每秒更新一次计时器
+
+        waitForReady();
         setInterval(updateTimer, 1000);
     </script>
 </body>
 </html>
-    
+
