@@ -33,9 +33,20 @@
     }
     .time-unit > div:first-child {
         font-variant-numeric: tabular-nums;
-        font-feature-settings: "tnum";
+        font-feature-settings: "tnum" 1;
+        font-kerning: none;
         min-width: 2ch;
         min-height: 1.15em;
+    }
+    .time-unit-wide {
+        min-width: 0;
+    }
+    .time-unit-wide > div:first-child {
+        display: block;
+        overflow: hidden;
+        font-kerning: none;
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum" 1;
     }
     .digit-tick {
         animation: digit-tick 0.32s ease;

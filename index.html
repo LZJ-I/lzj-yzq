@@ -44,7 +44,7 @@
             .page-loader { transition: none; }
         }
     </style>
-    <link href="./assets/styles.css?v=5" rel="stylesheet">
+    <link href="./assets/styles.css?v=6" rel="stylesheet">
     <noscript>
         <style>
             html.is-loading body > :not(#page-loader) { opacity: 1 !important; }
@@ -214,8 +214,8 @@
                 
                 <!-- 模式6: 秒 -->
                 <div id="mode6" class="timer-mode hidden flex justify-center p-3">
-                    <div class="time-unit bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
-                        <div id="totalSeconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark"></div>
+                    <div class="time-unit time-unit-wide bg-gradient-to-br from-love/5 to-love/10 rounded-xl p-3 transform transition-transform hover:scale-105 hover:shadow-lg text-center">
+                        <div id="totalSeconds" class="text-2xl md:text-4xl lg:text-5xl font-bold text-love-dark" data-ch="0"></div>
                         <div class="text-gray-600 text-xs md:text-sm mt-1">秒</div>
                     </div>
                 </div>
@@ -256,6 +256,11 @@
         function setText(id, value, tick) {
             const el = document.getElementById(id);
             const next = String(value);
+            if (el.hasAttribute('data-ch')) {
+                const digits = Math.max(next.length, Number(el.getAttribute('data-ch')) || 0);
+                el.setAttribute('data-ch', String(digits));
+                el.style.width = `${digits}ch`;
+            }
             if (el.textContent === next) return;
             el.textContent = next;
             if (!tick || reduceMotion) return;
@@ -368,7 +373,7 @@
             setText('m5-minutes', totalMinutes);
             setText('m5-seconds', seconds, timerMode === 5);
 
-            setText('totalSeconds', diff.totalSeconds, timerMode === 6);
+            setText('totalSeconds', diff.totalSeconds);
         }
 
         function revealPage() {
